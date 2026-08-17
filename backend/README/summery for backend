@@ -1,0 +1,732 @@
+📚 Complete Backend Documentation - README.md
+markdown
+# 🛍️ StyleHub - E-Commerce Backend
+
+## 📋 Project Overview
+
+**StyleHub** एक Fashion E-Commerce Backend है जो Node.js, Express.js, MongoDB का उपयोग करके बनाया गया है। यह एक Production-Ready API है जिसमें Authentication, Products, Categories, Cart, Orders, और Payment Integration शामिल है।
+
+### 🚀 Tech Stack
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Node.js | v20.x | Runtime Environment |
+| Express.js | v4.19.2 | Web Framework |
+| MongoDB | v8.5.1 | Database |
+| Mongoose | v8.5.1 | ODM for MongoDB |
+| JWT | v9.0.2 | Authentication |
+| Bcryptjs | v2.4.3 | Password Hashing |
+| Nodemailer | v6.9.14 | Email Service |
+| Razorpay | v2.0.0 | Payment Gateway |
+| Multer | v1.4.5-lts.1 | File Upload |
+| Cloudinary | v2.2.0 | Image Storage |
+
+---
+
+## 📁 **Folder Structure**
+server/
+│
+├── config/
+│ ├── db.js # MongoDB Connection
+│ └── cloudinary.js # Cloudinary Configuration
+│
+├── controllers/
+│ ├── authController.js # Authentication Logic
+│ ├── categoryController.js # Category CRUD Logic
+│ ├── productController.js # Product CRUD Logic
+│ ├── cartController.js # Cart Management Logic
+│ ├── orderController.js # Order Management Logic
+│ └── paymentController.js # Payment Logic
+│
+├── middleware/
+│ ├── authMiddleware.js # JWT Authentication
+│ └── adminMiddleware.js # Admin Authorization
+│
+├── models/
+│ ├── Admin.js # Admin Model
+│ ├── Customer.js # Customer Model
+│ ├── Category.js # Category Model
+│ ├── Product.js # Product Model
+│ ├── Cart.js # Cart Model
+│ ├── Order.js # Order Model
+│ └── OTP.js # OTP Model
+│
+├── routes/
+│ ├── authRoutes.js # Auth Routes
+│ ├── categoryRoutes.js # Category Routes
+│ ├── productRoutes.js # Product Routes
+│ ├── cartRoutes.js # Cart Routes
+│ ├── orderRoutes.js # Order Routes
+│ └── paymentRoutes.js # Payment Routes
+│
+├── services/
+│ └── email.service.js # Email Service (Nodemailer)
+│
+├── utils/
+│ ├── generateToken.js # JWT Token Generator
+│ ├── seedAdmin.js # Admin Seeder
+│ ├── ApiError.js # Custom Error Class
+│ ├── ApiResponse.js # API Response Class
+│ └── constants.js # Application Constants
+│
+├── uploads/ # File Uploads Directory
+│
+├── .env # Environment Variables
+├── .gitignore # Git Ignore File
+├── package.json # Dependencies
+└── server.js # Entry Point
+
+text
+
+---
+
+## 🔐 **1. Authentication Module** (`authController.js`)
+
+### 📍 **Purpose**
+User Authentication और Authorization का पूरा System।
+
+### 🎯 **Key Features**
+- ✅ Admin Login (Password-based)
+- ✅ Customer OTP Login (Email-based)
+- ✅ JWT Token Generation
+- ✅ Cookie-based Authentication
+- ✅ Logout Functionality
+- ✅ Current User Fetching
+
+### 📋 **APIs**
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| POST | `/api/auth/admin/login` | Admin Login with Password | Public |
+| POST | `/api/auth/send-otp` | Send OTP to Email | Public |
+| POST | `/api/auth/verify-otp` | Verify OTP & Login/Register | Public |
+| POST | `/api/auth/logout` | Logout User | Private |
+| GET | `/api/auth/me` | Get Current User | Private |
+| GET | `/api/auth/check` | Check Authentication Status | Private |
+
+### 🛠️ **How It Works**
+
+**Admin Flow:**
+Admin enters email & password
+
+Backend validates credentials
+
+JWT Token generated
+
+Token stored in httpOnly Cookie
+
+Admin logged in
+
+text
+
+**Customer Flow:**
+Customer enters email
+
+Backend generates 6-digit OTP
+
+OTP sent via Email
+
+Customer enters OTP
+
+Backend verifies OTP
+
+JWT Token generated
+
+Customer logged in/registered
+
+text
+
+---
+
+## 🏷️ **2. Category Module** (`categoryController.js`)
+
+### 📍 **Purpose**
+Product Categories को Manage करना।
+
+### 🎯 **Key Features**
+- ✅ Create Category (Admin only)
+- ✅ Get All Categories
+- ✅ Get Category by ID
+- ✅ Get Category by Slug
+- ✅ Update Category (Admin only)
+- ✅ Delete Category (Admin only)
+- ✅ Parent-Child Category Support
+- ✅ Auto-generate Slug from Name
+
+### 📋 **APIs**
+
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| POST | `/api/categories` | Create Category | Admin |
+| GET | `/api/categories` | Get All Categories | Public |
+| GET | `/api/categories/:id` | Get Category by ID | Public |
+| GET | `/api/categories/slug/:slug` | Get Category by Slug | Public |
+| PUT | `/api/categories/:id` | Update Category | Admin |
+| DELETE | `/api/categories/:id` | Delete Category | Admin |
+
+### 📊 **Request/Response Examples**
+
+**Create Category:**
+```json
+// Request
+POST /api/categories
+{
+  "name": "Men's Clothing",
+  "description": "Premium men's fashion collection",
+  "image": "https://example.com/men.jpg",
+  "order": 1
+}
+
+// Response
+{
+  "success": true,
+  "message": "Category created successfully",
+  "data": {
+    "_id": "67a8b2c3d4e5f6a7b8c9d001",
+    "name": "Men's Clothing",
+    "slug": "mens-clothing",
+    "description": "Premium men's fashion collection",
+    "image": "https://example.com/men.jpg",
+    "order": 1,
+    "isActive": true
+  }
+}
+👕 3. Product Module (productController.js)
+📍 Purpose
+Products को Manage करना (CRUD Operations + Filters).
+
+🎯 Key Features
+✅ Create Product (Admin only)
+
+✅ Get All Products with Filters
+
+✅ Search Products by Name/Description/Tags
+
+✅ Pagination Support
+
+✅ Filter by Category, Price, Size, Color
+
+✅ Sort by Price, Rating, Date
+
+✅ Featured, Best Seller, New Arrival Flags
+
+✅ Auto-generate Slug
+
+✅ Product Views Tracking
+
+✅ Stock Management
+
+📋 APIs
+Method	Endpoint	Description	Access
+POST	/api/products	Create Product	Admin
+GET	/api/products	Get All Products with Filters	Public
+GET	/api/products/:id	Get Product by ID	Public
+GET	/api/products/slug/:slug	Get Product by Slug	Public
+GET	/api/products/category/:categoryId	Get Products by Category	Public
+PUT	/api/products/:id	Update Product	Admin
+DELETE	/api/products/:id	Delete Product	Admin
+🔍 Filter Parameters
+Parameter	Description	Example
+search	Search by name/description/tags	?search=tshirt
+page	Page number	?page=2
+limit	Items per page	?limit=20
+sort	Sort by field	?sort=price:desc
+category	Filter by category	?category=cat_id
+minPrice	Minimum price	?minPrice=100
+maxPrice	Maximum price	?maxPrice=500
+sizes	Filter by sizes	?sizes=M,L,XL
+colors	Filter by colors	?colors=Black,White
+isFeatured	Featured products	?isFeatured=true
+isBestSeller	Best sellers	?isBestSeller=true
+isNewArrival	New arrivals	?isNewArrival=true
+📊 Example Request
+text
+GET /api/products?search=tshirt&minPrice=100&maxPrice=1000&sizes=M,L&isActive=true&page=1&limit=10&sort=price:asc
+📋 Response Format
+json
+{
+  "success": true,
+  "message": "Products fetched successfully",
+  "count": 10,
+  "total": 45,
+  "page": 1,
+  "totalPages": 5,
+  "data": [
+    {
+      "_id": "67a8b2c3d4e5f6a7b8c9d001",
+      "name": "Classic White T-Shirt",
+      "slug": "classic-white-t-shirt",
+      "description": "Premium quality cotton t-shirt",
+      "price": 499,
+      "comparePrice": 799,
+      "quantity": 100,
+      "category": {
+        "_id": "cat_id",
+        "name": "T-Shirts",
+        "slug": "t-shirts"
+      },
+      "images": ["https://example.com/tshirt1.jpg"],
+      "thumbnail": "https://example.com/tshirt-thumb.jpg",
+      "colors": ["White", "Black"],
+      "sizes": ["S", "M", "L", "XL"],
+      "tags": ["tshirt", "cotton"],
+      "isFeatured": true,
+      "isBestSeller": true,
+      "isActive": true,
+      "averageRating": 4.5,
+      "totalReviews": 10,
+      "totalSold": 25,
+      "views": 100
+    }
+  ]
+}
+🛒 4. Cart Module (cartController.js)
+📍 Purpose
+Customer की Shopping Cart को Manage करना।
+
+🎯 Key Features
+✅ Add Product to Cart
+
+✅ Get Cart Details
+
+✅ Update Cart Item Quantity
+
+✅ Update Item Color/Size
+
+✅ Remove Item from Cart
+
+✅ Clear Entire Cart
+
+✅ Get Cart Item Count
+
+✅ Automatic Price Calculation
+
+✅ Stock Validation
+
+📋 APIs
+Method	Endpoint	Description	Access
+GET	/api/cart	Get Cart	Customer
+GET	/api/cart/count	Get Cart Item Count	Customer
+POST	/api/cart	Add to Cart	Customer
+PUT	/api/cart/:itemId	Update Cart Item	Customer
+DELETE	/api/cart/:itemId	Remove from Cart	Customer
+DELETE	/api/cart	Clear Cart	Customer
+📊 Example Request
+Add to Cart:
+
+json
+// Request
+POST /api/cart
+{
+  "productId": "67a8b2c3d4e5f6a7b8c9d001",
+  "quantity": 2,
+  "color": "Black",
+  "size": "M"
+}
+
+// Response
+{
+  "success": true,
+  "message": "Item added to cart successfully",
+  "data": {
+    "items": [
+      {
+        "product": {
+          "_id": "67a8b2c3d4e5f6a7b8c9d001",
+          "name": "Classic White T-Shirt",
+          "price": 499,
+          "images": ["https://example.com/tshirt.jpg"],
+          "thumbnail": "https://example.com/tshirt-thumb.jpg"
+        },
+        "quantity": 2,
+        "color": "Black",
+        "size": "M",
+        "price": 499,
+        "total": 998
+      }
+    ],
+    "subtotal": 998,
+    "discount": 0,
+    "total": 998
+  }
+}
+📦 5. Order Module (orderController.js)
+📍 Purpose
+Orders को Manage करना।
+
+🎯 Key Features
+✅ Create Order from Cart
+
+✅ Automatic Order ID Generation
+
+✅ Stock Reduction on Order
+
+✅ Order Status Management
+
+✅ Order Cancellation
+
+✅ Order History
+
+✅ Admin Order Management
+
+✅ Track Order by ID
+
+✅ Pagination Support
+
+📋 APIs
+Method	Endpoint	Description	Access
+POST	/api/orders	Create Order	Customer
+GET	/api/orders/my-orders	Get My Orders	Customer
+GET	/api/orders/:id	Get Single Order	Customer
+PUT	/api/orders/:id/cancel	Cancel Order	Customer
+GET	/api/orders/admin/all	Get All Orders	Admin
+PUT	/api/orders/:id/status	Update Order Status	Admin
+📊 Order Status Flow
+text
+pending → confirmed → processing → shipped → delivered
+   ↓          ↓
+cancelled  cancelled
+📋 Order Status Values
+Status	Description
+pending	Order placed, waiting for confirmation
+confirmed	Admin confirmed the order
+processing	Order is being processed
+shipped	Order has been shipped
+delivered	Order delivered to customer
+cancelled	Order cancelled
+📊 Example Request
+Create Order:
+
+json
+// Request
+POST /api/orders
+{
+  "shippingAddress": {
+    "name": "Rahul Sharma",
+    "mobile": "9876543210",
+    "pincode": "110001",
+    "locality": "Connaught Place",
+    "address": "123, Main Street",
+    "city": "New Delhi",
+    "state": "Delhi",
+    "landmark": "Near Metro Station",
+    "addressType": "home"
+  },
+  "paymentMethod": "cod",
+  "notes": "Handle with care"
+}
+
+// Response
+{
+  "success": true,
+  "message": "Order placed successfully",
+  "data": {
+    "_id": "67a8b2c3d4e5f6a7b8c9d999",
+    "orderId": "ORD2407271234",
+    "customer": "customer_id",
+    "items": [
+      {
+        "product": "product_id",
+        "name": "Classic White T-Shirt",
+        "image": "https://example.com/tshirt.jpg",
+        "quantity": 2,
+        "color": "Black",
+        "size": "M",
+        "price": 499,
+        "total": 998
+      }
+    ],
+    "shippingAddress": {
+      "name": "Rahul Sharma",
+      "mobile": "9876543210",
+      "pincode": "110001",
+      "locality": "Connaught Place",
+      "address": "123, Main Street",
+      "city": "New Delhi",
+      "state": "Delhi"
+    },
+    "paymentMethod": "cod",
+    "paymentStatus": "pending",
+    "orderStatus": "pending",
+    "subtotal": 998,
+    "discount": 0,
+    "shippingCharges": 0,
+    "tax": 50,
+    "total": 1048,
+    "createdAt": "2026-07-27T13:12:04.733Z"
+  }
+}
+💳 6. Payment Module (paymentController.js)
+📍 Purpose
+Online Payment Processing (Razorpay).
+
+🎯 Key Features
+✅ Create Razorpay Order
+
+✅ Payment Verification
+
+✅ Payment Status Check
+
+✅ COD Support (Already in Order)
+
+✅ Secure Signature Verification
+
+📋 APIs
+Method	Endpoint	Description	Access
+POST	/api/payments/create-order	Create Razorpay Order	Customer
+POST	/api/payments/verify	Verify Payment	Customer
+GET	/api/payments/status/:orderId	Get Payment Status	Customer
+📊 Payment Flow
+text
+1. Customer creates order (paymentMethod: 'online')
+2. Create Razorpay Order → Get razorpayOrderId
+3. Frontend opens Razorpay Checkout
+4. Customer completes payment
+5. Razorpay sends payment response
+6. Backend verifies payment signature
+7. Update order paymentStatus: 'paid'
+8. Update order orderStatus: 'confirmed'
+📊 Example Request
+Create Razorpay Order:
+
+json
+// Request
+POST /api/payments/create-order
+{
+  "orderId": "67a8b2c3d4e5f6a7b8c9d999"
+}
+
+// Response
+{
+  "success": true,
+  "message": "Razorpay order created successfully",
+  "data": {
+    "razorpayOrderId": "order_xxxxxxxxxxxx",
+    "amount": 104800,
+    "currency": "INR",
+    "orderId": "67a8b2c3d4e5f6a7b8c9d999"
+  }
+}
+🗄️ Database Models
+📋 Admin Model
+Field	Type	Description
+name	String	Admin Name
+email	String	Admin Email (Unique)
+password	String	Hashed Password
+profileImage	String	Profile Picture URL
+isActive	Boolean	Account Status
+lastLogin	Date	Last Login Time
+📋 Customer Model
+Field	Type	Description
+name	String	Customer Name
+email	String	Customer Email (Unique)
+mobile	String	Mobile Number
+isVerified	Boolean	Email/Phone Verified
+isActive	Boolean	Account Status
+addresses	Array	Shipping Addresses
+lastLogin	Date	Last Login Time
+📋 Category Model
+Field	Type	Description
+name	String	Category Name (Unique)
+slug	String	URL Friendly Name
+description	String	Category Description
+image	String	Category Image
+parentCategory	ObjectId	Parent Category (for sub-categories)
+isActive	Boolean	Category Status
+order	Number	Display Order
+📋 Product Model
+Field	Type	Description
+name	String	Product Name
+slug	String	URL Friendly Name
+description	String	Product Description
+shortDescription	String	Short Description
+price	Number	Selling Price
+comparePrice	Number	Original Price (for discount)
+quantity	Number	Stock Quantity
+category	ObjectId	Product Category
+images	Array	Product Images
+thumbnail	String	Main Image
+colors	Array	Available Colors
+sizes	Array	Available Sizes
+tags	Array	Product Tags
+isFeatured	Boolean	Featured Product
+isBestSeller	Boolean	Best Seller
+isNewArrival	Boolean	New Arrival
+isActive	Boolean	Product Status
+averageRating	Number	Average Rating
+totalReviews	Number	Total Reviews
+totalSold	Number	Units Sold
+views	Number	Product Views
+⚙️ Setup & Installation
+📋 Prerequisites
+Node.js v20.x
+
+MongoDB (Local or Cloud)
+
+NPM or Yarn
+
+🚀 Installation Steps
+bash
+# 1. Clone Repository
+git clone https://github.com/yourusername/stylehub-backend.git
+
+# 2. Navigate to Project Directory
+cd stylehub-backend
+
+# 3. Install Dependencies
+npm install
+
+# 4. Create .env File
+cp .env.example .env
+
+# 5. Update .env with your credentials
+# - MongoDB URL
+# - JWT Secret
+# - Email Credentials
+# - Razorpay Keys
+
+# 6. Seed Admin
+npm run seed
+
+# 7. Start Server
+npm run dev
+📋 Environment Variables
+env
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+
+# MongoDB
+MONGODB_URI=mongodb://localhost:27017/stylehub
+
+# JWT
+JWT_SECRET=your_super_secret_jwt_key
+JWT_EXPIRE=7d
+
+# Admin (Pre-seeded)
+ADMIN_EMAIL=admin@shop.com
+ADMIN_PASSWORD=Admin@123
+ADMIN_NAME=Shop Admin
+
+# Email Configuration
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_app_password
+
+# Razorpay
+RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxx
+RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxxxxxx
+
+# Frontend URL
+FRONTEND_URL=http://localhost:5173
+
+# Cookie Settings
+COOKIE_SECURE=false
+🧪 Testing
+📋 Postman Collection
+All APIs can be tested using Postman.
+
+Import Collection:
+
+Open Postman
+
+Click Import
+
+Upload StyleHub.postman_collection.json
+
+📋 Test Accounts
+Admin Account:
+
+text
+Email: admin@shop.com
+Password: Admin@123
+Test Cards (Razorpay):
+
+Card Type	Card Number	CVV	Expiry	OTP
+Success	4111 1111 1111 1111	Any	Any Future	123456
+Failure	4111 1111 1111 1111	Any	Any Future	123456
+📊 API Response Format
+✅ Success Response
+json
+{
+  "success": true,
+  "message": "Operation successful",
+  "data": { ... }
+}
+❌ Error Response
+json
+{
+  "success": false,
+  "message": "Error message",
+  "errors": [ ... ]
+}
+🔒 Security Features
+✅ JWT Authentication
+
+✅ httpOnly Cookies
+
+✅ Password Hashing (Bcrypt)
+
+✅ Input Validation
+
+✅ CORS Protection
+
+✅ Environment Variables
+
+✅ Rate Limiting (Recommended)
+
+✅ Helmet (Recommended)
+
+📈 Future Enhancements
+□ Product Reviews & Ratings
+□ Wishlist Feature
+□ Coupon & Discount System
+□ Email Order Confirmation
+□ Shipping Integration (Shiprocket)
+□ Admin Dashboard Stats
+□ Analytics & Reports
+□ Push Notifications
+□ Mobile App API
+👨‍💻 Developer
+Prince Gond
+
+📝 License
+ISC License
+
+🙏 Acknowledgments
+Node.js
+
+Express.js
+
+MongoDB
+
+Razorpay
+
+Nodemailer
+
+📞 Contact
+Email: princegondrw123@gmail.com
+
+✨ Happy Coding! ✨
+
+text
+
+---
+
+## 📝 **Summary Table**
+
+| Module | File | Purpose | APIs |
+|--------|------|---------|------|
+| **Authentication** | `authController.js` | Login, OTP, JWT | 6 |
+| **Category** | `categoryController.js` | Category CRUD | 5 |
+| **Product** | `productController.js` | Product CRUD + Filters | 7 |
+| **Cart** | `cartController.js` | Cart Management | 6 |
+| **Order** | `orderController.js` | Order Management | 6 |
+| **Payment** | `paymentController.js` | Razorpay Integration | 3 |
+
+---
+
+**ये README.md file आपके Backend Project के Root में रखें!** 📄
+
+**अब बताएं Frontend शुरू करें?** 😊
