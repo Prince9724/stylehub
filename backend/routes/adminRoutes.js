@@ -1,25 +1,53 @@
-    import express from 'express';
-    import { 
-    adminSendOTP, 
-    adminVerifyOTP,
-    adminLogin
-    } from '../controllers/adminController.js';
-    import { protectAdmin } from '../middleware/authMiddleware.js';
+import express from 'express';
 
-    const router = express.Router();
+import {
+  adminSendOTP,
+  adminVerifyOTP,
+  adminLogin,
+  getCurrentAdmin
+} from '../controllers/adminController.js';
 
-    // ✅ Admin OTP Flow (No authentication required)
-    router.post('/send-otp', adminSendOTP);
-    router.post('/verify-otp', adminVerifyOTP);
-    router.post('/login', adminLogin);
+import { protectAdmin } from '../middleware/authMiddleware.js';
 
-    // ✅ Admin Protected Routes
-    router.get('/dashboard', protectAdmin, (req, res) => {
+const router = express.Router();
+
+
+// ========================================
+// ADMIN AUTH
+// ========================================
+
+router.post('/send-otp', adminSendOTP);
+
+router.post('/verify-otp', adminVerifyOTP);
+
+router.post('/login', adminLogin);
+
+// ========================================
+// CURRENT ADMIN
+// ========================================
+
+router.get(
+  '/me',
+  protectAdmin,
+  getCurrentAdmin
+);
+
+
+// ========================================
+// ADMIN DASHBOARD API
+// ========================================
+
+router.get(
+  '/dashboard',
+  protectAdmin,
+  (req, res) => {
     res.status(200).json({
-        success: true,
-        message: 'Welcome to Admin Dashboard',
-        user: req.admin
+      success: true,
+      message: 'Welcome to Admin Dashboard',
+      user: req.admin
     });
-    });
+  }
+);
 
-    export default router;
+
+export default router;

@@ -130,7 +130,7 @@ export const adminLogin = async (req, res) => {
     admin.lastLogin = new Date();
     await admin.save();
 
-    const token = generateToken(admin._id, 'admin', '7d');
+    const token = generateToken(admin._id, 'admin', '15d');
 
     res.cookie('token', token, {
       httpOnly: true,
@@ -150,6 +150,25 @@ export const adminLogin = async (req, res) => {
         role: 'admin'
       },
       token
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+export const getCurrentAdmin = async (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      user: {
+        id: req.admin._id,
+        name: req.admin.name,
+        email: req.admin.email,
+        mobile: req.admin.mobile,
+        role: 'admin'
+      }
     });
   } catch (error) {
     res.status(500).json({

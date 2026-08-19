@@ -1,30 +1,121 @@
+// import api from '../../api/axios';
+
+// // ========================================
+// // ADMIN LOGIN
+// // ========================================
+
+// export const adminLogin = async (email, password) => {
+//   const response = await api.post('/admin/login', {
+//     email,
+//     password,
+//   });
+
+//   return response.data;
+// };
+
+// // ========================================
+// // ADMIN CURRENT USER
+// // ========================================
+
+// export const getCurrentAdmin = async () => {
+//   const response = await api.get('/admin/dashboard');
+
+//   return response.data;
+// };
+
+// // ========================================
+// // CUSTOMER SEND OTP
+// // ========================================
+
+// export const sendOTP = async (email) => {
+//   const response = await api.post('/auth/send-otp', {
+//     email,
+//   });
+
+//   return response.data;
+// };
+
+// // ========================================
+// // CUSTOMER VERIFY OTP
+// // ========================================
+
+// export const verifyOTP = async (email, otp, name) => {
+//   const response = await api.post('/auth/verify-otp', {
+//     email,
+//     otp,
+//     name,
+//   });
+
+//   return response.data;
+// };
+
+// // ========================================
+// // CUSTOMER CURRENT USER
+// // ========================================
+
+// export const getCurrentUser = async () => {
+//   const response = await api.get('/auth/me');
+
+//   return response.data;
+// };
+
+// // ========================================
+// // LOGOUT
+// // ========================================
+
+// export const logoutUser = async () => {
+//   const response = await api.post('/auth/logout');
+
+//   return response.data;
+// };
 import api from '../../api/axios';
 
-// Send OTP (Customer)
+// ========================================
+// CUSTOMER
+// ========================================
+
 export const sendOTP = async (email) => {
   const response = await api.post('/auth/send-otp', { email });
   return response.data;
 };
 
-// Verify OTP (Customer)
 export const verifyOTP = async (email, otp, name) => {
-  const response = await api.post('/auth/verify-otp', { email, otp, name });
+  const response = await api.post('/auth/verify-otp', {
+    email,
+    otp,
+    name
+  });
+
   return response.data;
 };
 
-// ✅ Admin Login - SAHI ROUTE
-export const adminLogin = async (email, password) => {
-  const response = await api.post('/admin/login', { email, password });  // ✅ /admin/login
-  return response.data;
-};
-
-// Get Current User
 export const getCurrentUser = async () => {
   const response = await api.get('/auth/me');
   return response.data;
 };
 
-// Logout
+// ========================================
+// ADMIN
+// ========================================
+
+export const adminLogin = async (email, password) => {
+  const response = await api.post('/admin/login', {
+    email,
+    password
+  });
+
+  return response.data;
+};
+
+export const getCurrentAdmin = async () => {
+  const response = await api.get('/admin/me');
+  return response.data;
+};
+
+// ========================================
+// LOGOUT
+// ========================================
+
 export const logoutUser = async () => {
   const response = await api.post('/auth/logout');
   return response.data;

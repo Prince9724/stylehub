@@ -68,7 +68,19 @@ export const getCurrentUserThunk = createAsyncThunk(
     }
   }
 );
-
+export const getCurrentAdminThunk = createAsyncThunk(
+  'auth/getCurrentAdmin',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await authService.getCurrentAdmin();
+      return response;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Admin session expired'
+      );
+    }
+  }
+);
 // ✅ Logout
 export const logoutThunk = createAsyncThunk(
   'auth/logout',

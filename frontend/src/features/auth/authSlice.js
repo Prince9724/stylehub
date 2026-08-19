@@ -1,10 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
+
 import {
   adminLoginThunk,
   sendOTPThunk,
   verifyOTPThunk,
   getCurrentUserThunk,
-  logoutThunk
+  logoutThunk,
+  getCurrentAdminThunk
 } from './authThunks';
 
 const initialState = {
@@ -14,113 +16,201 @@ const initialState = {
   isLoading: false,
   error: null,
   otpSent: false,
+
+  // ✅ OTP ke liye email Redux me save hoga
+  otpEmail: '',
 };
 
 const authSlice = createSlice({
   name: 'auth',
+
   initialState,
+
   reducers: {
     clearError: (state) => {
       state.error = null;
     },
+
     setOTPSent: (state, action) => {
       state.otpSent = action.payload;
+
+      // Back button dabane par OTP email bhi clear karo
+      if (!action.payload) {
+        state.otpEmail = '';
+      }
     },
+
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
       state.otpSent = false;
+      state.otpEmail = '';
       state.error = null;
     },
   },
+
   extraReducers: (builder) => {
-    // ✅ Admin Login
     builder
+
+      // ========================================
+      // ADMIN LOGIN
+      // ========================================
+
       .addCase(adminLoginThunk.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
+
       .addCase(adminLoginThunk.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload?.user;
         state.token = action.payload?.token;
-        state.isAuthenticated = true;  // ✅ Yeh true hona chahiye
+        state.isAuthenticated = true;
         state.error = null;
+
         console.log('✅ ADMIN LOGGED IN:', state.user);
-        console.log('✅ ROLE:', state.user?.role);
-      })  
+      })
+
       .addCase(adminLoginThunk.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       })
 
-      // ✅ Send OTP
+      // ========================================
+      // SEND OTP
+      // ========================================
+
       .addCase(sendOTPThunk.pending, (state) => {
         state.isLoading = true;
         state.error = null;
         state.otpSent = false;
       })
-      .addCase(sendOTPThunk.fulfilled, (state) => {
+
+      .addCase(sendOTPThunk.fulfilled, (state, action) => {
         state.isLoading = false;
         state.otpSent = true;
         state.error = null;
+
+        // ✅ VERY IMPORTANT
+        // sendOTPThunk(email) ka email action.meta.arg me milta hai
+        state.otpEmail = action.meta.arg;
+
+        console.log('📧 OTP EMAIL SAVED:', state.otpEmail);
       })
+
       .addCase(sendOTPThunk.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
         state.otpSent = false;
+        state.otpEmail = '';
       })
 
-      // ✅ Verify OTP (Customer Login)
+      // ========================================
+      // VERIFY OTP
+      // ========================================
+
       .addCase(verifyOTPThunk.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      // ✅ Verify OTP (Customer Login)
+
       .addCase(verifyOTPThunk.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload?.user;
         state.token = action.payload?.token;
         state.isAuthenticated = true;
+
+        // ✅ OTP complete
         state.otpSent = false;
+        state.otpEmail = '';
+
         state.error = null;
+
         console.log('✅ USER LOGGED IN:', state.user);
-        console.log('✅ USER ROLE:', state.user?.role);
       })
+
       .addCase(verifyOTPThunk.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
-        console.log('❌ Verify OTP Failed:', action.payload);
       })
 
-      // ✅ Get Current User (Auto Login)
+      // ========================================
+      // GET CURRENT USER
+      // ========================================
+
       .addCase(getCurrentUserThunk.pending, (state) => {
         state.isLoading = true;
       })
+
       .addCase(getCurrentUserThunk.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload?.user;
+
+        state.user = action.payload?.data?.user;
         state.isAuthenticated = true;
-        console.log('✅ Auto-login user:', state.user?.email);
+
+        console.log(
+          '✅ Auto-login user:',
+          state.user?.email
+        );
       })
+
       .addCase(getCurrentUserThunk.rejected, (state) => {
         state.isLoading = false;
         state.user = null;
         state.isAuthenticated = false;
       })
 
-      // ✅ Logout
+      // ========================================
+      // LOGOUT
+      // ========================================
+
       .addCase(logoutThunk.fulfilled, (state) => {
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;
         state.otpSent = false;
+        state.otpEmail = '';
         state.error = null;
-        console.log('✅ Logged out');
-      });
-  },
-});
 
-export const { clearError, setOTPSent, logout } = authSlice.actions;
+        console.log('✅ Logged out');
+      })
+        .addCase(getCurrentAdminThunk.pending, (state) => {
+        state.isLoading = true;
+      })
+
+    .addCase(getCurrentAdminThunk.fulfilled, (state, action) => {
+      state.isLoading = false;
+
+      state.user =
+        action.payload?.user ||
+        action.payload?.data?.user;
+
+      state.isAuthenticated = true;
+      state.error = null;
+
+      console.log('✅ ADMIN SESSION RESTORED:', state.user);
+    })
+
+    .addCase(getCurrentAdminThunk.rejected, (state, action) => {
+      state.isLoading = false;
+
+      state.user = null;
+      state.token = null;
+      state.isAuthenticated = false;
+
+      state.error = action.payload;
+
+      console.log('ℹ️ No active admin session');
+    })
+
+},
+  });
+
+export const {
+  clearError,
+  setOTPSent,
+  logout
+} = authSlice.actions;
+
 export default authSlice.reducer;
