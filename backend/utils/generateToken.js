@@ -1,15 +1,27 @@
 import jwt from 'jsonwebtoken';
 
-const generateToken = (id, role, expiresIn, sessionId = null) => {
+const generateToken = (
+  id,
+  role,
+  expiresIn = '15d',
+  sessionId = null
+) => {
+
+  const payload = {
+    id,
+    role
+  };
+
+  // Only admin session gets sessionId
+  if (sessionId) {
+    payload.sessionId = sessionId;
+  }
+
   return jwt.sign(
-    {
-      id,
-      role,
-      sessionId
-    },
+    payload,
     process.env.JWT_SECRET,
     {
-      expiresIn: expiresIn || process.env.JWT_EXPIRE || '7d'
+      expiresIn
     }
   );
 };
