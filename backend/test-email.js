@@ -4,28 +4,44 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
   },
-  tls: {
-    rejectUnauthorized: false
-  }
+
+  connectionTimeout: 30000,
+  greetingTimeout: 30000,
+  socketTimeout: 30000
 });
 
 const test = async () => {
   try {
+
     console.log('📧 Testing email...');
+
+    await transporter.verify();
+
+    console.log('✅ Gmail SMTP connection successful!');
+
     const info = await transporter.sendMail({
-      from: `"Test" <${process.env.EMAIL_USER}>`,
+      from: `"StyleHub Test" <${process.env.EMAIL_USER}>`,
       to: 'princegondrw123@gmail.com',
-      subject: 'Test Email',
-      html: '<h1>Test Success</h1>'
+      subject: 'StyleHub Test Email',
+      html: '<h1>Test Email Successfully Sent 🚀</h1>'
     });
+
     console.log('✅ Email sent:', info.messageId);
+
   } catch (error) {
-    console.error('❌ Error:', error.message);
+
+    console.error('❌ Email Error');
+    console.error('Code:', error.code);
+    console.error('Message:', error.message);
+
   }
 };
 
